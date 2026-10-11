@@ -1,4 +1,4 @@
-const CACHE='digger-calibration-shell-v1.1.0';
+const CACHE='digger-calibration-shell-v1.1.0-r2';
 const FILES=['./','./index.html','./style.css','./core.js','./app.js','./report.js','./vendor/pdf-lib.min.js','./ozland-logo.png','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('digger-calibration-shell-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
