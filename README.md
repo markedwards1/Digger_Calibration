@@ -1,27 +1,32 @@
-# Digger Calibration
-Offline iPhone PWA for Survey GPS − Excavator GPS checks. No account, dependencies or server database. Jobs and drafts are saved in localStorage on the device. Export CSV regularly; browser storage is not a permanent backup.
+# Digger Calibration v1.1.0
+Offline iPhone PWA for Survey GPS minus Excavator GPS checks, ore digging checklist, signatures, CSV and PDF exports.
 
-## Use
-1. New job: excavator EX number, Cloud Kicker Pit or Crown Prince Pit, Shot number. Save captures Perth date (DD/MM/YYYY) and time once for all rows in that job.
-2. Enter full Northing, Easting and RL for Survey and Excavator GPS. Northing starts with 707 and Easting with 64. Add remaining digits or replace the complete value. Maximum 3 decimal places.
-3. Calculate saves one row and shows signed differences. Pass is inclusive ±0.400 m for Northing/Easting, ±0.200 m for RL.
-4. Next calibration adds another row; Edit replaces the current row. Finish shows arithmetic signed means (opposite signs can cancel). Means are not exported.
-5. Export downloads a CSV of every calibration across every job. Share opens iOS sharing when supported. New jobs append to the saved dataset. Clear all data requires confirmation.
+## Job flow
+New job fields: Operator Name, Excavator (EX prefix), Bench/Flitch, Shot, R/L, Block ID, Location (Cloud Kicker Pit or Crown Prince Pit). Date and time are captured once in Perth time on Save. Unknown optional details remain blank. Checklist choices are explicit Yes, No, N/A for all five items in the supplied Ore Digging Checklist.
 
-CSV columns: Location, Time, Date, excavator, Shot, Survey Northing, Survey Easting, Survey RL, Excavator Northing, Excavator Easting, Excavator RL.
+Calibration input, prefixes (707 Northing, 64 Easting), tolerances and signed averages retain version 1 behavior. Limits are inclusive: Northing/Easting ±0.400 m; RL ±0.200 m. Coordinates accept up to three decimal places. Edit replaces a record. Next adds another.
 
-## Publish on GitHub
-Create a repository named `Digger_Calibration`. Upload the contents of this folder, including `.github/workflows/pages.yml`, on branch `main`. In Settings → Pages choose **GitHub Actions** as the source. Run the Deploy GitHub Pages workflow. This is a static app; it needs no secrets. Your coordinate records remain in your phone browser, not in GitHub.
+Finish displays signed averages. Sign off job asks for Surveyor Name and finger signature, then Operator Name and finger signature. Each can be explicitly skipped. The PDF says Signature skipped when skipped; it never represents missing signatures as signed. These are drawn acknowledgements, not cryptographic digital signatures. All fail results remain visible. Editing job details, checklist or a calibration invalidates previous signatures and requires a fresh sign-off.
 
-Alternatively upload the static files to the root of the repository and use Settings → Pages → Deploy from a branch → main / (root).
+After sign-off, Export CSV & PDF / Share CSV & PDF opens the native share sheet for both files where supported. Save to Files or choose an email app; the app does not send email by itself. Separate CSV and PDF download buttons are available when combined file sharing is unsupported. Files are prepared before the sharing tap so iOS retains its user gesture. PDF contains the selected job only; CSV contains all saved jobs. Saved jobs can be reopened from the job list for export, updating details or sign-off. New-job drafts and unfinished signatures recover after closing the app.
 
-## Install on iPhone
-Open the HTTPS GitHub Pages URL in Safari while online. Wait for **Offline ready**. Tap Share → Add to Home Screen (Open as Web App if offered). Open the installed icon once while online, wait for Offline ready, then test in Airplane Mode. Safari and Home Screen apps may have separate storage: enter and export records consistently from the installed app. CSV sharing requires a compatible iOS share target; Export is the fallback.
+## CSV compatibility
+The first 11 columns are exactly:
+Location, Time, Date, Excavator, Shot, Survey Northing, Survey Easting, Survey RL, Excavator Northing, Excavator Easting, Excavator RL.
 
-## Verify
+Additional columns follow these: Operator Name, Bench/Flitch, R/L, Block ID, five checklist answers, Surveyor Name, Surveyor Signature Status, Operator Signature Status. Existing jobs have blank new details and Not completed statuses. Averages and signature drawings are not in the CSV.
+
+## PDF
+Page 1 reproduces the supplied form's logo, details, checklist and acknowledgements (Surveyor replaces the original Geology signatory as requested). Calibration pages show Survey, Excavator and signed Difference with pass/fail on every axis. Six calibrations per page; 8-10 calibrations produce three pages in total. Font and line wrapping adapt to long details. Standard PDF fonts cover Western European names; unsupported glyphs are replaced with a question mark. PDF creation is entirely local using the bundled pdf-lib MIT library, no CDN or server requests beyond cached app files.
+
+## Data and updating
+Retains the `digger-calibration-v1` storage key, existing rows, timestamps and identifiers. No deletion or reset is needed. Keep using the same installed Home Screen app and URL. Safari and Home Screen apps can have separate storage. Export periodically: browser data is not a durable backup. Signature drawings remain on the phone until the user exports/shares the document; they are not uploaded to GitHub.
+
+Open online and close/reopen to pick up the v1.1.0 cache; check the displayed version and Offline ready, then test Airplane Mode. Do not clear website data or remove/reinstall the app to update because that can erase records. The app caches PDF library and logo alongside the UI.
+
+## Hosting
+GitHub Pages deploys from main / (root). No build step or dependency installation is needed. Publish all static files, including report.js, vendor/pdf-lib.min.js, vendor/pdf-lib-LICENSE.md, and ozland-logo.png.
+
+## Checks
 `node --test tests/*.test.cjs`
-
-Field checks before production: enter a known pair of coordinates, check signs and boundaries; edit without duplication; add another row; finish/export; close/reopen with a draft; test offline; verify CSV in your office spreadsheet. Browser UI and physical iPhone checks have not been completed in the build environment.
-
-## Updating
-Change the cache version in `sw.js` whenever static app files change. Keep the storage key unless providing a migration. Opening online loads a new service worker; reopen the app after updating. Do not clear website data to update, as doing so deletes calibration records.
+Automated tests cover boundary math, CSV column order, editing, persistence, explicit skipped sign-offs, signature invalidation, legacy records, and multi-page PDF generation. PDF page images are inspected during development. Physical iPhone signing and native share sheet behavior still require device validation.
